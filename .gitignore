@@ -1,3 +1,7 @@
+.idea/
+.vs/
+dist/
+
 # Prerequisites
 *.d
 
