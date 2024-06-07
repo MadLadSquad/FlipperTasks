@@ -20,6 +20,9 @@ Dependencies:
 ## Sceenshots
 
 ![Screenshot 1](https://raw.githubusercontent.com/MadLadSquad/FlipperTasks/master/showcase/flipper1.png)
+
 ![Screenshot 2](https://raw.githubusercontent.com/MadLadSquad/FlipperTasks/master/showcase/flipper2.png)
+
 ![Screenshot 3](https://raw.githubusercontent.com/MadLadSquad/FlipperTasks/master/showcase/flipper3.png)
+
 ![Screenshot 4](https://raw.githubusercontent.com/MadLadSquad/FlipperTasks/master/showcase/flipper4.png)
