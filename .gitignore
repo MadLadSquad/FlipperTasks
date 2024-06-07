@@ -1,6 +1,7 @@
 .idea/
 .vs/
 dist/
+.vscode/
 
 # Prerequisites
 *.d
