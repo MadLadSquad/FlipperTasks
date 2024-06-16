@@ -50,7 +50,7 @@ namespace FTasks::Input
         ctx->inputTextBuffer.resize(128);
         popup->setResultCallback(callback<T>, popup->application, ctx->inputTextBuffer.data(), ctx->inputTextBuffer.size(), false);
 
-        GOTO_SCENE(popup->application, T);
+        RENDER_VIEW(popup->application, T);
     }
 
     bool event(void* context, SceneManagerEvent event) noexcept;

@@ -15,26 +15,7 @@ int32_t tasks_app(void* p)
 
     UFZ::View view{};
     view.setDeferredSetupCallback([&application](UFZ::View& v) -> void {
-        UNUSED(v.setContext(&application)
-                .setInputCallback([](InputEvent* event, void* context) -> bool {
-                    if (event == nullptr || context == nullptr)
-                        return false;
-                    if (event->type == InputTypePress)
-                    {
-                        if (event->key == InputKeyLeft || event->key == InputKeyRight)
-                        {
-                            auto* app = (UFZ::Application*)context;
-                            auto* ctx = CTX(app->getUserPointer());
-
-                            ctx->currentContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
-                            ctx->currentNoteIndex = 0;
-
-                            UNUSED(app->getSceneManager().searchAndSwitchToAnotherScene(FTasks::Scenes::MAIN_MENU));
-                            return true;
-                        }
-                    }
-                    return false;
-                }));
+        FTasks::List::viewInputEvent(application, v);
     });
 
     UFZ::Submenu list{ FTasks::List::enter<FTasks::Scenes::MAIN_MENU>, FTasks::List::event<FTasks::Scenes::MAIN_MENU>, FTasks::List::exit<FTasks::Scenes::MAIN_MENU>, { &view } };

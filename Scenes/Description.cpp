@@ -9,7 +9,7 @@ void FTasks::Description::enter(void* context) noexcept
             .setHeader("Description:", 64, 4, AlignCenter, AlignTop)
             .setIcon(-1, -1, nullptr)
             .setText((*ctx->currentContainer)[ctx->currentNoteIndex].second.c_str(), 4, 16, AlignLeft, AlignTop);
-    GOTO_SCENE(popup->application, Scenes::DESCRIPTION);
+    RENDER_VIEW(popup->application, Scenes::DESCRIPTION);
 }
 
 bool FTasks::Description::event(void* context, SceneManagerEvent event) noexcept

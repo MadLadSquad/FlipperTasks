@@ -27,7 +27,7 @@ void FTasks::DeleteDialog::enter(void* context) noexcept
             .setCenterButtonText(nullptr)
             .setRightButtonText("Yes")
             .setResultCallback(callback);
-    GOTO_SCENE(popup->application, Scenes::DELETE);
+    RENDER_VIEW(popup->application, Scenes::DELETE);
 }
 
 bool FTasks::DeleteDialog::event(void* context, SceneManagerEvent event) noexcept

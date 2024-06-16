@@ -4,6 +4,8 @@
 namespace FTasks::List
 {
     void callback(void* context, uint32_t index) noexcept;
+    void viewInputEvent(UFZ::Application& application, UFZ::View& view) noexcept;
+    bool viewInputEventCallback(InputEvent* event, void* context) noexcept;
 
     template<Scenes::Scenes T>
     void enter(void* context) noexcept
@@ -14,7 +16,6 @@ namespace FTasks::List
         static bool bFirst = true;
         if (bFirst && T == Scenes::MAIN_MENU)
         {
-
             Data::load(*menu->application);
             bFirst = false;
         }
@@ -36,7 +37,7 @@ namespace FTasks::List
             for (size_t i = 0; i < ctx->currentContainer->size(); i++)
                 UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), Scenes::POPUP + i, callback, menu->application));
         }
-        GOTO_SCENE(menu->application, T);
+        RENDER_VIEW(menu->application, T);
     }
 
     template<Scenes::Scenes T>
