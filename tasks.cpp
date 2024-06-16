@@ -4,6 +4,12 @@
 #include "Scenes/DeleteDialog.hpp"
 #include "Scenes/Description.hpp"
 
+void begin(UFZ::Application& application)
+{
+    UNUSED(application);
+    FTasks::Data::load(application);
+}
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -29,7 +35,7 @@ int32_t tasks_app(void* p)
 
     FTasks::ApplicationData data{};
 
-    application.init({ &list, &editList, &inputName, &inputDescription, &description, &deleteDialog }, &data);
+    application.init({ &list, &editList, &inputName, &inputDescription, &description, &deleteDialog }, &data, begin);
     FTasks::Data::save(application);
     return 0;
 }

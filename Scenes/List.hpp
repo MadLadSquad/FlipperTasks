@@ -27,13 +27,6 @@ namespace FTasks::List
         }
         else
         {
-            static bool bFirst = true;
-            if (bFirst)
-            {
-                Data::load(*menu->application);
-                bFirst = false;
-            }
-
             UNUSED(menu->setHeader(ctx->currentContainer == &ctx->containers.todo ? "Tasks - TODO" : "Tasks - Done"));
             for (size_t i = 0; i < ctx->currentContainer->size(); i++)
                 UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), Scenes::POPUP + i, callback, menu->application));
