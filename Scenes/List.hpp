@@ -13,18 +13,12 @@ namespace FTasks::List
         auto* menu = GET_WIDGET_P(context, UFZ::Submenu, T);
         auto* ctx = CTX(menu->application->getUserPointer());
 
-        static bool bFirst = true;
-        if (bFirst && T == Scenes::MAIN_MENU)
-        {
-            Data::load(*menu->application);
-            bFirst = false;
-        }
-
         menu->reset();
 
         if constexpr (T == Scenes::EDIT_MENU)
         {
-            UNUSED(menu->setHeader(("Editing: " + (*ctx->currentContainer)[ctx->currentNoteIndex].first).c_str())
+            ctx->tmpBuffer = "Editing: " +  (*ctx->currentContainer)[ctx->currentNoteIndex].first;
+            UNUSED(menu->setHeader(ctx->tmpBuffer.c_str())
                            .addItem("Description",         Dialogs::DESCRIPTION,        callback, menu->application)
                            .addItem((ctx->currentContainer == &ctx->containers.todo ? "Mark as done" : "Mark as not done"), Dialogs::DONE, callback, menu->application)
                            .addItem("Rename",              Dialogs::RENAME,             callback, menu->application)
@@ -33,6 +27,13 @@ namespace FTasks::List
         }
         else
         {
+            static bool bFirst = true;
+            if (bFirst)
+            {
+                Data::load(*menu->application);
+                bFirst = false;
+            }
+
             UNUSED(menu->setHeader(ctx->currentContainer == &ctx->containers.todo ? "Tasks - TODO" : "Tasks - Done"));
             for (size_t i = 0; i < ctx->currentContainer->size(); i++)
                 UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), Scenes::POPUP + i, callback, menu->application));

@@ -49,6 +49,8 @@ namespace FTasks
 
     struct ApplicationData
     {
+        std::string tmpBuffer;
+
         std::string dialogTextStorage;
         std::string inputTextBuffer;
 
