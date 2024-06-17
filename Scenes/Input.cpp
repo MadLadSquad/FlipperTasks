@@ -2,6 +2,10 @@
 
 bool FTasks::Input::event(void* context, SceneManagerEvent event) noexcept
 {
-    UNUSED(context); UNUSED(event);
+    if (event.type == SceneManagerEventTypeCustom)
+    {
+        FORCE_NEXT_SCENE((UFZ::Application*)context, event.event);
+        return true;
+    }
     return false;
 }

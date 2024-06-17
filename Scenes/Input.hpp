@@ -28,7 +28,7 @@ namespace FTasks::Input
             else
                 id = Scenes::DESCRIPTION_TEXT_EDIT;
         }
-        UNUSED(app->getSceneManager().searchAndSwitchToAnotherScene(id));
+        SEND_CUSTOM_EVENT(app, id);
     }
 
     template<Scenes::Scenes T>

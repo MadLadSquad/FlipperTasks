@@ -6,7 +6,6 @@
 
 void begin(UFZ::Application& application)
 {
-    UNUSED(application);
     FTasks::Data::load(application);
 }
 
@@ -20,7 +19,8 @@ int32_t tasks_app(void* p)
     UFZ::Application application{};
 
     UFZ::View view{};
-    view.setDeferredSetupCallback([&application](UFZ::View& v) -> void {
+    view.setDeferredSetupCallback([&application](UFZ::View& v) -> void
+    {
         FTasks::List::viewInputEvent(application, v);
     });
 

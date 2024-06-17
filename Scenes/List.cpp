@@ -2,8 +2,7 @@
 
 void FTasks::List::callback(void* context, uint32_t index) noexcept
 {
-    auto* app = (UFZ::Application*)context;
-    UNUSED(app->getSceneManager().handleCustomEvent(index));
+    SEND_CUSTOM_EVENT((UFZ::Application*)context, index);
 }
 
 void FTasks::List::viewInputEvent(UFZ::Application& application, UFZ::View& view) noexcept
@@ -19,13 +18,7 @@ bool FTasks::List::viewInputEventCallback(InputEvent* event, void* context) noex
     {
         if (event->key == InputKeyLeft || event->key == InputKeyRight)
         {
-            auto* app = (UFZ::Application*)context;
-            auto* ctx = CTX(app->getUserPointer());
-
-            ctx->currentContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
-            ctx->currentNoteIndex = 0;
-
-            UNUSED(app->getSceneManager().searchAndSwitchToAnotherScene(FTasks::Scenes::MAIN_MENU));
+            SEND_CUSTOM_EVENT((UFZ::Application*)context, Scenes::MAIN_MENU);
             return true;
         }
     }

@@ -42,9 +42,18 @@ namespace FTasks::List
         if (event.type == SceneManagerEventTypeCustom)
         {
             auto* ctx = CTX(app->getUserPointer());
+            consumed = true;
 
             if constexpr (T == Scenes::MAIN_MENU)
             {
+                if (event.event == Scenes::MAIN_MENU) // Switching containers
+                {
+                    ctx->currentContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
+                    ctx->currentNoteIndex = 0;
+
+                    FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
+                    return consumed;
+                }
                 ctx->currentNoteIndex = (event.event - Scenes::POPUP);
 
                 if (ctx->currentContainer == &ctx->containers.todo && ctx->currentNoteIndex == 0) // We're making a new note
@@ -53,10 +62,10 @@ namespace FTasks::List
                     ctx->bMakingNewNote = true;
                     ctx->currentNoteIndex = ctx->containers.todo.size() - 1;
 
-                    app->getSceneManager().nextScene(Scenes::NAME_TEXT_EDIT);
+                    FORCE_NEXT_SCENE(app, Scenes::NAME_TEXT_EDIT);
                 }
                 else
-                    app->getSceneManager().nextScene(Scenes::EDIT_MENU);
+                    FORCE_NEXT_SCENE(app, Scenes::EDIT_MENU);
             }
             else
             {
@@ -84,9 +93,7 @@ namespace FTasks::List
                         otherContainer->push_back((*ctx->currentContainer)[ctx->currentNoteIndex]);
                         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
 
-                        // Go back because the current view holds invalid references. Additionally, changing the scene
-                        // would require an additional press of the back button to actually exit
-                        UNUSED(app->getSceneManager().previousScene());
+                        FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
                         scene = Scenes::EDIT_MENU;
                         break;
                     case Dialogs::RENAME:
@@ -106,8 +113,19 @@ namespace FTasks::List
                 // add the current scene to the last and current scenes, requiring an additional press of the back button
                 // to go back
                 if (scene != T)
-                    app->getSceneManager().nextScene(scene);
+                    NEXT_SCENE(app, scene);
             }
+        }
+        else if (event.type == SceneManagerEventTypeBack)
+        {
+            if constexpr (T == Scenes::EDIT_MENU)
+                FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
+            else
+            {
+                EXIT_SCENE(app);
+                EXIT_APPLICATION(app);
+            }
+
             consumed = true;
         }
         return consumed;

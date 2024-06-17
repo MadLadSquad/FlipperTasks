@@ -8,7 +8,7 @@ void FTasks::DeleteDialog::callback(DialogExResult result, void* context) noexce
         auto* ctx = CTX(app->getUserPointer());
         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
     }
-    UNUSED(app->getSceneManager().searchAndSwitchToAnotherScene(Scenes::MAIN_MENU)); // Disallows returning to the popup using the back button
+    SEND_CUSTOM_EVENT(app, Scenes::MAIN_MENU);
 }
 
 void FTasks::DeleteDialog::enter(void* context) noexcept
@@ -32,7 +32,11 @@ void FTasks::DeleteDialog::enter(void* context) noexcept
 
 bool FTasks::DeleteDialog::event(void* context, SceneManagerEvent event) noexcept
 {
-    UNUSED(context); UNUSED(event);
+    if (event.type == SceneManagerEventTypeCustom)
+    {
+        FORCE_NEXT_SCENE((UFZ::Application*)context, event.event);
+        return true;
+    }
     return false;
 }
 
