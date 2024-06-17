@@ -35,8 +35,9 @@ int32_t tasks_app(void* p)
 
     FTasks::ApplicationData data{};
 
-    application.init({ &list, &editList, &inputName, &inputDescription, &description, &deleteDialog }, &data, begin);
+    application.run({ &list, &editList, &inputName, &inputDescription, &description, &deleteDialog }, &data, begin);
     FTasks::Data::save(application);
+    application.destroy();
     return 0;
 }
 #ifdef __cplusplus

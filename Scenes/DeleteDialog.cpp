@@ -16,13 +16,15 @@ void FTasks::DeleteDialog::enter(void* context) noexcept
     auto* popup = GET_WIDGET_P(context, UFZ::DialogEx, Scenes::DELETE);
     auto* ctx = CTX(popup->application->getUserPointer());
 
-    ctx->dialogTextStorage = "Do you want to delete the following note: \"" + (*ctx->currentContainer)[ctx->currentNoteIndex].first + "\"?";
+    ctx->tmpBuffer = R"(Do you want to delete the following note: ")";
+    ctx->tmpBuffer += (*ctx->currentContainer)[ctx->currentNoteIndex].first.c_str(); // Call c_str() because appending doesn't work I guess??
+    ctx->tmpBuffer += R"("?)";
 
     popup->reset();
     popup->setContext(popup->application)
             .setHeader("Delete note?", 64, 4, AlignCenter, AlignTop)
             .setIcon(-1, -1, nullptr)
-            .setText(ctx->dialogTextStorage.c_str(), 4, 16, AlignLeft, AlignTop)
+            .setText(ctx->tmpBuffer.c_str(), 4, 16, AlignLeft, AlignTop)
             .setLeftButtonText("No")
             .setCenterButtonText(nullptr)
             .setRightButtonText("Yes")

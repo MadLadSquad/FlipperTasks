@@ -51,7 +51,6 @@ namespace FTasks
     {
         std::string tmpBuffer;
 
-        std::string dialogTextStorage;
         std::string inputTextBuffer;
 
         Containers containers{};

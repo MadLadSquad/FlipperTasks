@@ -38,10 +38,11 @@ namespace FTasks::List
     bool event(void* context, SceneManagerEvent event) noexcept
     {
         auto* app = (UFZ::Application*)context;
+        auto* ctx = CTX(app->getUserPointer());
+
         bool consumed = false;
         if (event.type == SceneManagerEventTypeCustom)
         {
-            auto* ctx = CTX(app->getUserPointer());
             consumed = true;
 
             if constexpr (T == Scenes::MAIN_MENU)
@@ -121,11 +122,7 @@ namespace FTasks::List
             if constexpr (T == Scenes::EDIT_MENU)
                 FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
             else
-            {
-                EXIT_SCENE(app);
                 EXIT_APPLICATION(app);
-            }
-
             consumed = true;
         }
         return consumed;
