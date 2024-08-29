@@ -1,11 +1,11 @@
 #include "DeleteDialog.hpp"
 
-void FTasks::DeleteDialog::callback(DialogExResult result, void* context) noexcept
+void FTasks::DeleteDialog::callback(const DialogExResult result, void* context) noexcept
 {
-    auto* app = (UFZ::Application*)context;
+    const auto* app = static_cast<UFZ::Application*>(context);
     if (result == DialogExResultRight)
     {
-        auto* ctx = CTX(app->getUserPointer());
+        const auto* ctx = CTX(app->getUserPointer());
         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
     }
     SEND_CUSTOM_EVENT(app, Scenes::MAIN_MENU);
@@ -32,11 +32,11 @@ void FTasks::DeleteDialog::enter(void* context) noexcept
     RENDER_VIEW(popup->application, Scenes::DELETE);
 }
 
-bool FTasks::DeleteDialog::event(void* context, SceneManagerEvent event) noexcept
+bool FTasks::DeleteDialog::event(void* context, const SceneManagerEvent event) noexcept
 {
     if (event.type == SceneManagerEventTypeCustom)
     {
-        FORCE_NEXT_SCENE((UFZ::Application*)context, event.event);
+        FORCE_NEXT_SCENE(static_cast<UFZ::Application*>(context), event.event);
         return true;
     }
     return false;

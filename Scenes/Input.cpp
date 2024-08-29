@@ -1,10 +1,10 @@
 #include "Input.hpp"
 
-bool FTasks::Input::event(void* context, SceneManagerEvent event) noexcept
+bool FTasks::Input::event(void* context, const SceneManagerEvent event) noexcept
 {
     if (event.type == SceneManagerEventTypeCustom)
     {
-        FORCE_NEXT_SCENE((UFZ::Application*)context, event.event);
+        FORCE_NEXT_SCENE(static_cast<UFZ::Application*>(context), event.event);
         return true;
     }
     return false;

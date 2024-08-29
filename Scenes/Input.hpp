@@ -6,7 +6,7 @@ namespace FTasks::Input
     template<Scenes::Scenes T>
     void callback(void* context) noexcept
     {
-        auto* app = (UFZ::Application*)context;
+        const auto* app = static_cast<UFZ::Application*>(context);
         auto* ctx = CTX(app->getUserPointer());
         ctx->inputTextBuffer.shrink_to_fit();
 

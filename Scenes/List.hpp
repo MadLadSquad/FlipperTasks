@@ -35,9 +35,9 @@ namespace FTasks::List
     }
 
     template<Scenes::Scenes T>
-    bool event(void* context, SceneManagerEvent event) noexcept
+    bool event(void* context, const SceneManagerEvent event) noexcept
     {
-        auto* app = (UFZ::Application*)context;
+        const auto* app = static_cast<UFZ::Application*>(context);
         auto* ctx = CTX(app->getUserPointer());
 
         bool consumed = false;
