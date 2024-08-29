@@ -4,7 +4,7 @@
 namespace FTasks::List
 {
     void callback(void* context, uint32_t index) noexcept;
-    void viewInputEvent(UFZ::Application& application, UFZ::View& view) noexcept;
+    void viewInputEvent(UFZ::Application& application, const UFZ::View& view) noexcept;
     bool viewInputEventCallback(InputEvent* event, void* context) noexcept;
 
     template<Scenes::Scenes T>
