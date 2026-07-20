@@ -29,13 +29,13 @@ namespace FTasks::List
         {
             UNUSED(menu->setHeader(ctx->currentContainer == &ctx->containers.todo ? "Tasks - TODO" : "Tasks - Done"));
             for (size_t i = 0; i < ctx->currentContainer->size(); i++)
-                UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), Scenes::POPUP + i, callback, menu->application));
+                UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), noteEventOffset + i, callback, menu->application));
 
             // Return the user to the task they were working on, but only after edits that kept the index valid
             if (ctx->bPreserveSelection)
             {
                 if (ctx->currentNoteIndex < ctx->currentContainer->size())
-                    UNUSED(menu->setSelectedItem(static_cast<uint32_t>(Scenes::POPUP + ctx->currentNoteIndex)));
+                    UNUSED(menu->setSelectedItem(static_cast<uint32_t>(noteEventOffset + ctx->currentNoteIndex)));
                 ctx->bPreserveSelection = false;
             }
         }
@@ -64,7 +64,7 @@ namespace FTasks::List
                     FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
                     return consumed;
                 }
-                ctx->currentNoteIndex = (event.event - Scenes::POPUP);
+                ctx->currentNoteIndex = (event.event - noteEventOffset);
                 ctx->bPreserveSelection = true;
 
                 if (ctx->currentContainer == &ctx->containers.todo && ctx->currentNoteIndex == 0) // We're making a new note
@@ -81,7 +81,6 @@ namespace FTasks::List
             else
             {
                 Scenes::Scenes scene;
-                NoteContainer* otherContainer;
 
                 switch (event.event)
                 {
@@ -89,25 +88,21 @@ namespace FTasks::List
                         scene = Scenes::DESCRIPTION;
                         break;
                     case Dialogs::DONE:
-                        if (ctx->currentContainer == &ctx->containers.todo)
-                        {
-                            if (ctx->containers.todo.size() == 1)
-                            {
-                                scene = Scenes::EDIT_MENU;
-                                break;
-                            }
-                            otherContainer = &ctx->containers.done;
-                        }
-                        else
-                            otherContainer = &ctx->containers.todo;
+                    {
+                        // Nothing to mark as done while the TODO list only holds the "+ New task" sentinel. Staying put
+                        // avoids re-entering this scene, which would cost the user an extra press of the back button
+                        if (ctx->currentContainer == &ctx->containers.todo && ctx->containers.todo.size() == 1)
+                            return consumed;
+
+                        NoteContainer* otherContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
 
                         ctx->bPreserveSelection = false; // The task moves containers, so the index no longer refers to it
                         otherContainer->push_back((*ctx->currentContainer)[ctx->currentNoteIndex]);
                         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
 
                         FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
-                        scene = Scenes::EDIT_MENU;
-                        break;
+                        return consumed;
+                    }
                     case Dialogs::RENAME:
                         scene = Scenes::NAME_TEXT_EDIT;
                         break;
@@ -121,11 +116,7 @@ namespace FTasks::List
                         scene = Scenes::MAIN_MENU;
                         break;
                 }
-                // In case the scene we're going to is the same as the current scene don't do any navigation as this will
-                // add the current scene to the last and current scenes, requiring an additional press of the back button
-                // to go back
-                if (scene != T)
-                    NEXT_SCENE(app, scene);
+                NEXT_SCENE(app, scene);
             }
         }
         else if (event.type == SceneManagerEventTypeBack)

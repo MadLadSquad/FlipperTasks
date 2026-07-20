@@ -8,7 +8,10 @@ namespace FTasks::Input
     {
         const auto* app = static_cast<UFZ::Application*>(context);
         auto* ctx = CTX(app->getUserPointer());
-        ctx->inputTextBuffer.shrink_to_fit();
+        // TextInput fills the 128-byte buffer allocated in enter() with a NUL-terminated string, leaving the
+        // std::string at its full 128-byte size. Trim it back to the text the user actually typed: the padding
+        // is invisible through c_str() but writeContainerString writes size() bytes, so it would end up on disk
+        ctx->inputTextBuffer.resize(std::strlen(ctx->inputTextBuffer.c_str()));
 
         if constexpr (T == Scenes::DESCRIPTION_TEXT_EDIT)
             (*ctx->currentContainer)[ctx->currentNoteIndex].second = ctx->inputTextBuffer;

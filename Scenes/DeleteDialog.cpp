@@ -45,7 +45,7 @@ bool FTasks::DeleteDialog::event(void* context, const SceneManagerEvent event) n
     return false;
 }
 
-void FTasks::DeleteDialog::exit(void* context)
+void FTasks::DeleteDialog::exit(void* context) noexcept
 {
     GET_WIDGET_P(context, UFZ::DialogEx, Scenes::DELETE)->reset();
 }
