@@ -30,6 +30,14 @@ namespace FTasks::List
             UNUSED(menu->setHeader(ctx->currentContainer == &ctx->containers.todo ? "Tasks - TODO" : "Tasks - Done"));
             for (size_t i = 0; i < ctx->currentContainer->size(); i++)
                 UNUSED(menu->addItem((*ctx->currentContainer)[i].first.c_str(), Scenes::POPUP + i, callback, menu->application));
+
+            // Return the user to the task they were working on, but only after edits that kept the index valid
+            if (ctx->bPreserveSelection)
+            {
+                if (ctx->currentNoteIndex < ctx->currentContainer->size())
+                    UNUSED(menu->setSelectedItem(static_cast<uint32_t>(Scenes::POPUP + ctx->currentNoteIndex)));
+                ctx->bPreserveSelection = false;
+            }
         }
         RENDER_VIEW(menu->application, T);
     }
@@ -51,11 +59,13 @@ namespace FTasks::List
                 {
                     ctx->currentContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
                     ctx->currentNoteIndex = 0;
+                    ctx->bPreserveSelection = false;
 
                     FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
                     return consumed;
                 }
                 ctx->currentNoteIndex = (event.event - Scenes::POPUP);
+                ctx->bPreserveSelection = true;
 
                 if (ctx->currentContainer == &ctx->containers.todo && ctx->currentNoteIndex == 0) // We're making a new note
                 {
@@ -91,6 +101,7 @@ namespace FTasks::List
                         else
                             otherContainer = &ctx->containers.todo;
 
+                        ctx->bPreserveSelection = false; // The task moves containers, so the index no longer refers to it
                         otherContainer->push_back((*ctx->currentContainer)[ctx->currentNoteIndex]);
                         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
 

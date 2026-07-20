@@ -40,34 +40,35 @@ void FTasks::Data::readContainerString(FTasks::NoteContainer& container, const U
         container.emplace_back(content.substr(previous, pos), "");
 }
 
+namespace
+{
+    // Both helpers scope their own file handle, so the UFZ::File destructor closes it on every path
+    void saveContainer(const UFZ::Application& application, const char* path, const FTasks::NoteContainer& container) noexcept
+    {
+        UFZ::File file{};
+        if (file.open(application.getFilesystem(), path, FSAM_WRITE, FSOM_CREATE_ALWAYS))
+            FTasks::Data::writeContainerString(container, file);
+    }
+
+    // An absent or empty file leaves the container at its default contents
+    void loadContainer(const UFZ::Application& application, const char* path, FTasks::NoteContainer& container) noexcept
+    {
+        UFZ::File file{};
+        if (file.open(application.getFilesystem(), path, FSAM_READ, FSOM_OPEN_EXISTING) && file.size() > 0)
+            FTasks::Data::readContainerString(container, file);
+    }
+}
+
 void FTasks::Data::save(const UFZ::Application& application) noexcept
 {
-    UFZ::File file{};
-
     const auto* ctx = CTX(application.getUserPointer());
-    if (file.open(application.getFilesystem(), TASKS_TODO_DATA_FILE, FSAM_WRITE, FSOM_CREATE_ALWAYS))
-        writeContainerString(ctx->containers.todo, file);
-    file.close();
-    if (file.open(application.getFilesystem(), TASKS_DONE_DATA_FILE, FSAM_WRITE, FSOM_CREATE_ALWAYS))
-        writeContainerString(ctx->containers.done, file);
+    saveContainer(application, TASKS_TODO_DATA_FILE, ctx->containers.todo);
+    saveContainer(application, TASKS_DONE_DATA_FILE, ctx->containers.done);
 }
 
 void FTasks::Data::load(const UFZ::Application& application) noexcept
 {
-    UFZ::File file{};
-
     auto* ctx = CTX(application.getUserPointer());
-    if (file.open(application.getFilesystem(), TASKS_TODO_DATA_FILE, FSAM_READ_WRITE, FSOM_OPEN_EXISTING))
-    {
-        if (file.size() == 0)
-            return;
-        readContainerString(ctx->containers.todo, file);
-    }
-    file.close();
-    if (file.open(application.getFilesystem(), TASKS_DONE_DATA_FILE, FSAM_READ_WRITE, FSOM_OPEN_EXISTING))
-    {
-        if (file.size() == 0)
-            return;
-        readContainerString(ctx->containers.done, file);
-    }
+    loadContainer(application, TASKS_TODO_DATA_FILE, ctx->containers.todo);
+    loadContainer(application, TASKS_DONE_DATA_FILE, ctx->containers.done);
 }

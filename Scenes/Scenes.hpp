@@ -59,6 +59,10 @@ namespace FTasks
         size_t currentNoteIndex = 0;
 
         bool bMakingNewNote = false;
+
+        // Set when returning to the main menu should re-select currentNoteIndex. Only non-destructive edits set this;
+        // deleting a task or marking it as (not) done invalidates the index, so those reset the selection to the top.
+        bool bPreserveSelection = false;
     };
 
     namespace Data

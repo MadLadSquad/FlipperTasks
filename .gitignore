@@ -2,6 +2,11 @@
 .vs/
 dist/
 .vscode/
+.claude/
+.agents/
+graphify-out/
+venv/
+.venv/
 
 # Prerequisites
 *.d

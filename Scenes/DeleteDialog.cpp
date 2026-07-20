@@ -3,12 +3,15 @@
 void FTasks::DeleteDialog::callback(const DialogExResult result, void* context) noexcept
 {
     const auto* app = static_cast<UFZ::Application*>(context);
+    auto* ctx = CTX(app->getUserPointer());
     if (result == DialogExResultRight)
     {
-        const auto* ctx = CTX(app->getUserPointer());
         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
+        ctx->bPreserveSelection = false; // The task is gone, so the index no longer refers to it
+        SEND_CUSTOM_EVENT(app, Scenes::MAIN_MENU);
     }
-    SEND_CUSTOM_EVENT(app, Scenes::MAIN_MENU);
+    else // Declining the deletion returns to the menu the dialog was opened from
+        SEND_CUSTOM_EVENT(app, Scenes::EDIT_MENU);
 }
 
 void FTasks::DeleteDialog::enter(void* context) noexcept
