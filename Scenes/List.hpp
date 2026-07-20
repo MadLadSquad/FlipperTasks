@@ -64,6 +64,14 @@ namespace FTasks::List
                     FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
                     return consumed;
                 }
+
+                // Every real note event carries noteEventOffset + i. Anything below that is a scene id delivered
+                // here in error; subtracting the offset would underflow currentNoteIndex (a size_t) into a wild
+                // index that the next EDIT_MENU enter() dereferences unchecked. The container-switch id (0) is
+                // handled above; this guards the rest of the range should another scene id ever reach us
+                if (event.event < noteEventOffset)
+                    return consumed;
+
                 ctx->currentNoteIndex = (event.event - noteEventOffset);
                 ctx->bPreserveSelection = true;
 

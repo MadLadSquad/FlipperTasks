@@ -35,7 +35,7 @@ Navigation macros come from `UFZ/Common.hpp`: `NEXT_SCENE` (push), `FORCE_NEXT_S
 
 ### Shared state
 
-`FTasks::ApplicationData` (`Scenes/Scenes.hpp`) is the single mutable context, retrieved from the application user pointer via the `CTX(x)` macro. Tasks live in two `NoteContainer`s (`std::vector<std::pair<name, description>>`): `todo` and `done`. `currentContainer`/`currentNoteIndex` track the selection. The first `todo` entry (`"+ New task"`) is a sentinel that creates a new task and must not be moved/deleted (guarded in `List::event`).
+`FTasks::ApplicationData` (`Scenes/Scenes.hpp`) is the single mutable context, retrieved from the application user pointer via the `CTX(x)` macro. Tasks live in two `NoteContainer`s (`std::vector<std::pair<name, description>>`): `todo` and `done`. `currentContainer`/`currentNoteIndex` track the selection. The first `todo` entry (`newTaskName` / `newTaskDescription`) is a sentinel that creates a new task and must not be moved/deleted (guarded in `List::event`). It is **code-owned, not persisted**: `Data::save` skips index 0 and `Data::load` re-inserts it, so it always exists exactly once regardless of the save file. Both operations key off the `newTaskName`/`newTaskDescription` constants — treat those as the single source of the sentinel's text.
 
 ### Persistence
 
@@ -47,6 +47,7 @@ Two details are deliberate rather than incidental:
 
 - **Writes go field-by-field, not batched.** `save()` runs while the GUI still holds the heap, so building a whole-file buffer can trip `furi_crash("Out of memory")` on the ~256KB-SRAM device. `readContainerString` can afford a full-file buffer only because `begin()` runs before any GUI allocation. See the comment above `writeContainerString`.
 - **`readContainerString` trims trailing NULs from every field** (`trimPadding`). Saves written by older versions carry up to 128 bytes of padding per edited field, plus one extra NUL on the last description per round trip; loading rewrites them clean.
+- **`Data::load` migrates saves written before the sentinel became code-owned.** Those files store the sentinel as the first `todo` record; `load` drops a leading record matching both sentinel fields before prepending the code-owned one, so old saves don't end up with a duplicate.
 
 ### Icons
 

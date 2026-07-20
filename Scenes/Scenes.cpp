@@ -11,12 +11,13 @@ namespace
         str.resize(str.find_last_not_of('\0') + 1); // npos + 1 == 0, i.e. an all-NUL field becomes empty
     }
 
-    // Both helpers scope their own file handle, so the UFZ::File destructor closes it on every path
-    void saveContainer(const UFZ::Application& application, const char* path, const FTasks::NoteContainer& container) noexcept
+    // Both helpers scope their own file handle, so the UFZ::File destructor closes it on every path.
+    // skip drops that many leading entries — todo passes 1 to leave its code-owned sentinel out of the file
+    void saveContainer(const UFZ::Application& application, const char* path, const FTasks::NoteContainer& container, const size_t skip = 0) noexcept
     {
         UFZ::File file{};
         if (file.open(application.getFilesystem(), path, FSAM_WRITE, FSOM_CREATE_ALWAYS))
-            FTasks::Data::writeContainerString(container, file);
+            FTasks::Data::writeContainerString(container, file, skip);
     }
 
     // An absent or empty file leaves the container at its default contents
@@ -34,17 +35,20 @@ namespace
 // can hit furi_crash("Out of memory") on the ~256KB-SRAM Flipper. Load can afford a full-file
 // buffer only because begin() runs before any GUI allocation. Extra storage_file_write calls are
 // cheap at to-do-list data sizes; if batching is ever needed, use a small fixed-size chunk buffer.
-void FTasks::Data::writeContainerString(const FTasks::NoteContainer& container, const UFZ::File& file) noexcept
+void FTasks::Data::writeContainerString(const FTasks::NoteContainer& container, const UFZ::File& file, const size_t start) noexcept
 {
-    for (size_t i = 0; i < container.size(); i++)
+    // start lets save() drop the leading sentinel from todo without copying the container (this runs under the
+    // tight save-time memory budget described above). The separator goes before every entry except the first
+    // written one, so the file has no leading or trailing newline regardless of where writing begins
+    for (size_t i = start; i < container.size(); i++)
     {
         const auto& a = container[i];
-        file.write((void*)a.first.data(), a.first.size());
-        file.write((void*)newLine, 1);
-        file.write((void*)a.second.data(), a.second.size());
+        if (i > start)
+            file.write(newLine, 1);
 
-        if (i < (container.size() - 1))
-            file.write((void*)newLine, 1);
+        file.write(a.first.data(), a.first.size());
+        file.write(newLine, 1);
+        file.write(a.second.data(), a.second.size());
     }
 }
 
@@ -81,7 +85,7 @@ void FTasks::Data::readContainerString(FTasks::NoteContainer& container, const U
 void FTasks::Data::save(const UFZ::Application& application) noexcept
 {
     const auto* ctx = CTX(application.getUserPointer());
-    saveContainer(application, TASKS_TODO_DATA_FILE, ctx->containers.todo);
+    saveContainer(application, TASKS_TODO_DATA_FILE, ctx->containers.todo, 1); // Skip the code-owned sentinel at index 0
     saveContainer(application, TASKS_DONE_DATA_FILE, ctx->containers.done);
 }
 
@@ -90,4 +94,13 @@ void FTasks::Data::load(const UFZ::Application& application) noexcept
     auto* ctx = CTX(application.getUserPointer());
     loadContainer(application, TASKS_TODO_DATA_FILE, ctx->containers.todo);
     loadContainer(application, TASKS_DONE_DATA_FILE, ctx->containers.done);
+
+    // Guarantee exactly one sentinel at the front of todo. An absent/empty file leaves the seeded sentinel in
+    // place; a file written by this version has no sentinel; a file written by an older version still carries it
+    // as its first record. Drop that leading copy if present (matching both fields so a real task merely named
+    // "+ New task" survives), then prepend the code-owned one. Runs in begin(), before any GUI allocation
+    auto& todo = ctx->containers.todo;
+    if (!todo.empty() && todo.front().first == newTaskName && todo.front().second == newTaskDescription)
+        todo.erase(todo.begin());
+    todo.insert(todo.begin(), { newTaskName, newTaskDescription });
 }

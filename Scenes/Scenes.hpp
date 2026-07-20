@@ -47,9 +47,16 @@ namespace FTasks
 
     typedef std::vector<std::pair<std::string, std::string>> NoteContainer;
 
+    // The first todo entry is a sentinel: selecting index 0 creates a new task (List::event). It belongs to the
+    // code, not the save file — Data::save omits it and Data::load re-inserts it — so it exists exactly once no
+    // matter what the persisted file holds. Older builds stored it in todo.save; Data::load strips that copy on
+    // the way in. Seed, save-skip and load migration all key off these two strings, so keep them the single source.
+    inline constexpr const char* newTaskName = "+ New task";
+    inline constexpr const char* newTaskDescription = "Describes a new task";
+
     struct Containers
     {
-        NoteContainer todo{ { "+ New task", "Describes a new task" } };
+        NoteContainer todo{ { newTaskName, newTaskDescription } };
         NoteContainer done{};
     };
 
@@ -73,7 +80,7 @@ namespace FTasks
 
     namespace Data
     {
-        void writeContainerString(const NoteContainer& container, const UFZ::File& file) noexcept;
+        void writeContainerString(const NoteContainer& container, const UFZ::File& file, size_t start = 0) noexcept;
         void readContainerString(NoteContainer& container, const UFZ::File& file) noexcept;
 
         void save(const UFZ::Application& application) noexcept;
