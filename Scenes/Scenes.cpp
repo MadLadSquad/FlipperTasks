@@ -29,8 +29,9 @@ namespace
     }
 }
 
-// Writes field-by-field straight out of the container's strings on purpose. Save runs after run()
-// returns but before destroy() (see tasks.cpp), when widgets/GUI still occupy the heap — batching
+// Writes field-by-field straight out of the container's strings on purpose. Save runs after every
+// mutation and once more after run() returns but before destroy() (see tasks.cpp), so the
+// widgets/GUI occupy the heap either way — batching
 // into a temporary buffer copies the whole dataset (~3x transiently with std::string growth) and
 // can hit furi_crash("Out of memory") on the ~256KB-SRAM Flipper. Load can afford a full-file
 // buffer only because begin() runs before any GUI allocation. Extra storage_file_write calls are

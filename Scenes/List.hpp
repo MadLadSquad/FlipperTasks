@@ -17,7 +17,7 @@ namespace FTasks::List
 
         if constexpr (T == Scenes::EDIT_MENU)
         {
-            ctx->tmpBuffer = "Editing: " +  (*ctx->currentContainer)[ctx->currentNoteIndex].first;
+            ctx->tmpBuffer = "Editing: " + CURRENT_NOTE(ctx).first;
             UNUSED(menu->setHeader(ctx->tmpBuffer.c_str())
                            .addItem("Description",         Dialogs::DESCRIPTION,        callback, menu->application)
                            .addItem((ctx->currentContainer == &ctx->containers.todo ? "Mark as done" : "Mark as not done"), Dialogs::DONE, callback, menu->application)
@@ -105,8 +105,10 @@ namespace FTasks::List
                         NoteContainer* otherContainer = ctx->currentContainer == &ctx->containers.todo ? &ctx->containers.done : &ctx->containers.todo;
 
                         ctx->bPreserveSelection = false; // The task moves containers, so the index no longer refers to it
-                        otherContainer->push_back((*ctx->currentContainer)[ctx->currentNoteIndex]);
+                        otherContainer->push_back(CURRENT_NOTE(ctx));
                         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
+
+                        Data::save(*app); // Persist the move right away so a crash or battery pull can't lose it
 
                         FORCE_NEXT_SCENE(app, Scenes::MAIN_MENU);
                         return consumed;
@@ -120,9 +122,11 @@ namespace FTasks::List
                     case Dialogs::DELETE:
                         scene = Scenes::DELETE;
                         break;
+                    // A stray event id stays put instead of navigating, mirroring the noteEventOffset guard in the
+                    // MAIN_MENU branch above. Every Dialogs value needs a case: -Wswitch cannot flag a missing one
+                    // because event.event is a raw uint32_t, not a Dialogs enum
                     default:
-                        scene = Scenes::MAIN_MENU;
-                        break;
+                        return consumed;
                 }
                 NEXT_SCENE(app, scene);
             }

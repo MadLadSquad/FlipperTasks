@@ -27,7 +27,7 @@ The app is scene-based, driven by the Flipper `SceneManager`/`ViewDispatcher` th
 Each scene provides `enter`/`event`/`exit` handlers wired into its widget in `tasks.cpp`:
 
 - `List` — templated on the scene enum so one implementation serves both `MAIN_MENU` (task list) and `EDIT_MENU` (per-task actions). The main menu's item indices are offset by `Scenes::POPUP + i` to map submenu selections back to task indices. A short press of Left or Right (via the raw `View` input callback in `viewInputEvent`) switches between the TODO and Done containers.
-- `Input` — templated `TextInput` scene shared by rename (`NAME_TEXT_EDIT`) and edit-description (`DESCRIPTION_TEXT_EDIT`).
+- `Input` — templated `TextInput` scene shared by rename (`NAME_TEXT_EDIT`) and edit-description (`DESCRIPTION_TEXT_EDIT`). Text is entered through a 128-byte buffer (127 characters + NUL). That limit is deliberate: a max-length description fits the `Description` popup screen exactly, which is why the popup needs no wrapping or scrolling and why the limit must not be raised casually.
 - `Description` — popup showing a task's description.
 - `DeleteDialog` — delete confirmation.
 
@@ -39,9 +39,11 @@ Navigation macros come from `UFZ/Common.hpp`: `NEXT_SCENE` (push), `FORCE_NEXT_S
 
 ### Persistence
 
-`FTasks::Data` (`Scenes/Scenes.cpp`) saves/loads to `todo.save` / `done.save` in app data storage as newline-delimited alternating name/description lines. Loaded in `begin()` before the run loop; saved after `application.run()` returns (app exit).
+`FTasks::Data` (`Scenes/Scenes.cpp`) saves/loads to `todo.save` / `done.save` in app data storage as newline-delimited alternating name/description lines. Loaded in `begin()` before the run loop; saved after every completed mutation (rename, description edit, finished note creation, mark done/not done, delete — a half-created note between the name and description steps is not saved) and once more after `application.run()` returns (app exit).
 
 The format needs no escaping: names and descriptions can never contain a newline, because the only way to enter them is the Flipper `TextInput` keyboard, which has no key that produces one.
+
+**Save files are trusted.** We assume `todo.save` / `done.save` are only ever authored and edited by this application — never hand-edited, truncated, or corrupted. Do not add defensive handling for malformed save files, and do not report malformed-file scenarios as issues in reviews.
 
 Two details are deliberate rather than incidental:
 

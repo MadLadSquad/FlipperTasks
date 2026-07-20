@@ -6,6 +6,8 @@
 #include "../UFZ/UI.hpp"
 
 #define CTX(x) ((FTasks::ApplicationData*)(x))
+// The note the user currently has selected, i.e. what currentContainer/currentNoteIndex point at
+#define CURRENT_NOTE(x) ((*(x)->currentContainer)[(x)->currentNoteIndex])
 #define TASKS_TODO_DATA_FILE STORAGE_APP_DATA_PATH_PREFIX"/todo.save"
 #define TASKS_DONE_DATA_FILE STORAGE_APP_DATA_PATH_PREFIX"/done.save"
 
@@ -62,6 +64,10 @@ namespace FTasks
 
     struct ApplicationData
     {
+        // Scratch text displayed by widgets. DialogEx and Popup store the raw pointer they are given (only
+        // Submenu copies its header), so whatever scene hands tmpBuffer to such a widget owns it until that
+        // scene exits — nothing else may write tmpBuffer while the widget is still on screen. Sharing it
+        // between the EDIT_MENU header and the delete dialog text works only because the header is copied
         std::string tmpBuffer;
 
         std::string inputTextBuffer;

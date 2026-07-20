@@ -8,6 +8,7 @@ void FTasks::DeleteDialog::callback(const DialogExResult result, void* context) 
     {
         ctx->currentContainer->erase(ctx->currentContainer->begin() + static_cast<NoteContainer::difference_type>(ctx->currentNoteIndex));
         ctx->bPreserveSelection = false; // The task is gone, so the index no longer refers to it
+        Data::save(*app); // Persist the deletion right away so a crash or battery pull can't lose it
         SEND_CUSTOM_EVENT(app, Scenes::MAIN_MENU);
     }
     else // Declining the deletion returns to the menu the dialog was opened from
@@ -20,7 +21,7 @@ void FTasks::DeleteDialog::enter(void* context) noexcept
     auto* ctx = CTX(popup->application->getUserPointer());
 
     ctx->tmpBuffer = R"(Do you want to delete the following note: ")";
-    ctx->tmpBuffer += (*ctx->currentContainer)[ctx->currentNoteIndex].first.c_str(); // Call c_str() because appending doesn't work I guess??
+    ctx->tmpBuffer += CURRENT_NOTE(ctx).first;
     ctx->tmpBuffer += R"("?)";
 
     popup->reset();
